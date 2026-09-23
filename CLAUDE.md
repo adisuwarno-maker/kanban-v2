@@ -10,6 +10,17 @@ A single-file IT project Kanban board (`index.html`) for an internal "UOB IT PMO
 
 Open `index.html` directly in a browser (double-click / `file://`). No server is required. To verify changes, open it in the browser pane and exercise the UI or use `javascript_tool` to drive it (e.g. `taskForm.requestSubmit()`, dispatching `DragEvent`s on `.column` elements).
 
+## Publishing
+
+`/push <repo-url|owner/repo> [message]` (defined in `.claude/commands/push.md`) does the full release:
+- security scan
+- README
+- GitHub About section
+- Pages workflow
+- commit and push
+
+The site is served by GitHub Pages from the repo root. This machine has no `gh` CLI, so repo settings changes and first-time git authentication must be done by the user.
+
 ## Hard constraints (from the original spec — do not violate)
 
 - Vanilla HTML/CSS/JS only: no frameworks, libraries, CDNs, web fonts, image files, bundlers or npm. Icons are Unicode glyphs or inline SVG; fonts use the system stack.
