@@ -4,6 +4,8 @@ A single-page IT project Kanban board built with vanilla HTML, CSS and JavaScrip
 
 **Live site:** https://adisuwarno-maker.github.io/kanban4/
 
+![Kanban board with the Add Task form, filters and four status columns](docs/screenshot.png)
+
 ## Features
 
 - **Four columns:** Backlog, In Progress, Blocked and Done, each with a live task count.
