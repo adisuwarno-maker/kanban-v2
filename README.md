@@ -18,6 +18,7 @@ A single-page IT project Kanban board built with vanilla HTML, CSS and JavaScrip
 - **Inline delete** asks "Delete? Yes / No" on the card, with no browser dialogs.
 - **Add Task form** with inline validation: the title is required (max 80 characters), the description is optional (max 500), the assignee is required, and the due date cannot be in the past.
 - **Filters** by project, assignee (contains) and priority.
+- **Welcome dialog:** after 10 seconds on the page, a dialog thanks the visitor and gives the IT support hotline number. It shows once per page load, and waits if the tab is in the background.
 - **Email notifications** for new tasks via [FormSubmit](https://formsubmit.co). The UI is optimistic: if the email fails, the card stays and a warning toast appears.
 
 ## Run locally
