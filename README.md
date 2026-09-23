@@ -2,20 +2,22 @@
 
 A single-page IT project Kanban board built with vanilla HTML, CSS and JavaScript in one file. This is an **internal demo/training tool**. It is not affiliated with, and does not imitate, any official UOB system.
 
-**Live site:** https://adisuwarno-maker.github.io/kanban4/
+**Live site (v2):** https://adisuwarno-maker.github.io/kanban-v2/
 
-![Kanban board with the Add Task form, filters and four status columns](docs/screenshot.png)
+![Kanban board with the status summary bar, per-workstream status bars, filters and four colour-coded status columns](docs/screenshot.png)
 
 ## Features
 
+- **Status summary:** a headline ("2 of 8 tasks done"), a line saying what needs attention, a legend with counts, and one bar split by status. Overdue work shows as red hatching inside the segment it belongs to.
+- **Workstreams:** one status bar per project, with its done count and overdue count. Selecting a workstream filters the board to that project, and selecting it again clears the filter.
+- **Colour-coded statuses:** Backlog is slate, In Progress is blue, Blocked is amber and Done is green. Each column has its status colour on its top edge, background, count badge and card borders.
 - **Four columns:** Backlog, In Progress, Blocked and Done, each with a live task count.
-- **Task cards** show the ID (`UOB-ITPM-####`), title, project, assignee, due date, category tag and priority pill. The left border is colour-coded by priority: Critical is red, High is amber, Medium is blue and Low is grey.
+- **Task cards** show the ID (`UOB-ITPM-####`), title, project, assignee, due date, category tag and priority. Priority is a neutral signal meter (four bars for Critical, one for Low) so that it doesn't compete with the status colours.
 - **Drag and drop** between columns uses native HTML5 DnD, and the column under the cursor is highlighted. Each card also has a keyboard-accessible **Move ▸** control.
-- **Overdue badge** on tasks that are past due and not Done.
+- **Overdue highlight:** a task that is past due and not Done gets a red outline, a hatched red top edge and a solid red "Overdue" badge, whichever column it's in.
 - **Inline delete** asks "Delete? Yes / No" on the card, with no browser dialogs.
 - **Add Task form** with inline validation: the title is required (max 80 characters), the description is optional (max 500), the assignee is required, and the due date cannot be in the past.
 - **Filters** by project, assignee (contains) and priority.
-- **Summary strip** showing total tasks, the count per status, and overdue tasks.
 - **Email notifications** for new tasks via [FormSubmit](https://formsubmit.co). The UI is optimistic: if the email fails, the card stays and a warning toast appears.
 
 ## Run locally

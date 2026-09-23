@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>UOB IT PMO — Kanban</title>
+<title>UOB IT PMO Kanban</title>
 <style>
 /* =========================================================================
    1. DESIGN TOKENS — palette, spacing scale, type
@@ -29,11 +29,28 @@
   --c-focus-on-dark: #ffd166;
   --c-drop: #d6e4fb;
 
-  /* Priority colours (left border / accents) */
-  --p-critical: #c62828;
-  --p-high: #d98a00;
-  --p-medium: #1e63c6;
-  --p-low: #7a8699;
+  /* Status colours: fill (--st-*), readable ink, tinted background, hairline */
+  --st-backlog: #5b6b82;
+  --st-backlog-ink: #445266;
+  --st-backlog-bg: #eef1f6;
+  --st-backlog-line: #cbd3de;
+  --st-progress: #1f5fd0;
+  --st-progress-ink: #1a4fae;
+  --st-progress-bg: #e9f0fd;
+  --st-progress-line: #bcd0f5;
+  --st-blocked: #b25e09;
+  --st-blocked-ink: #8a4504;
+  --st-blocked-bg: #fdf3e4;
+  --st-blocked-line: #efcb95;
+  --st-done: #1a7f45;
+  --st-done-ink: #14663a;
+  --st-done-bg: #e9f6ee;
+  --st-done-line: #b3dcc3;
+  --st-overdue: #c42b2b;
+  --st-overdue-ink: #a61f1f;
+  --st-overdue-bg: #fdeded;
+  --st-overdue-line: #f0b3b3;
+  --hatch-overdue: repeating-linear-gradient(135deg, var(--st-overdue) 0 3px, transparent 3px 7px);
 
   /* Status feedback */
   --c-danger: #b71c1c;
@@ -57,7 +74,7 @@
   --shadow-sm: 0 1px 2px rgba(15, 30, 60, 0.08);
   --shadow: 0 4px 14px rgba(15, 30, 60, 0.12);
 
-  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font: "Avenir Next", Avenir, "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
@@ -152,12 +169,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .icon-btn:hover { background: var(--c-danger-bg); color: var(--c-danger); }
 
 /* =========================================================================
-   4. HEADER — wordmark, summary strip, demo note
+   4. HEADER — slim brand strip, then the portfolio status "pulse"
    ========================================================================= */
 .app-header {
-  background: linear-gradient(135deg, var(--c-primary-900), var(--c-primary));
+  background: var(--c-primary-900);
   color: #fff;
-  padding: var(--s-4) var(--s-5);
+  padding: var(--s-3) var(--s-5);
 }
 .app-header :focus-visible { outline-color: var(--c-focus-on-dark); }
 
@@ -171,35 +188,91 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .brand { display: flex; align-items: baseline; gap: var(--s-3); flex-wrap: wrap; }
 .wordmark {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
   letter-spacing: 0.04em;
 }
-.brand-sub { font-size: 14px; opacity: 0.85; }
+.brand-sub { font-size: 14px; opacity: 0.8; }
 
-.summary {
+/* Status legend swatches and bar segments share one colour mapping */
+[data-status="Backlog"]     { --st: var(--st-backlog);  --st-ink: var(--st-backlog-ink);  --st-bg: var(--st-backlog-bg);  --st-line: var(--st-backlog-line); }
+[data-status="In Progress"] { --st: var(--st-progress); --st-ink: var(--st-progress-ink); --st-bg: var(--st-progress-bg); --st-line: var(--st-progress-line); }
+[data-status="Blocked"]     { --st: var(--st-blocked);  --st-ink: var(--st-blocked-ink);  --st-bg: var(--st-blocked-bg);  --st-line: var(--st-blocked-line); }
+[data-status="Done"]        { --st: var(--st-done);     --st-ink: var(--st-done-ink);     --st-bg: var(--st-done-bg);     --st-line: var(--st-done-line); }
+
+.pulse {
+  background: var(--c-surface);
+  border-bottom: 1px solid var(--c-border);
+  padding: var(--s-5) var(--s-5) var(--s-4);
+}
+.pulse-top {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s-2);
-  margin-top: var(--s-4);
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-3) var(--s-6);
+  margin-bottom: var(--s-4);
 }
-.stat {
+.pulse-headline {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.pulse-headline .of { color: var(--c-muted); font-weight: 500; }
+.pulse-sub { margin-top: var(--s-1); font-size: 14px; color: var(--c-muted); }
+
+.legend {
   display: flex;
-  flex-direction: column;
-  min-width: 92px;
-  padding: var(--s-2) var(--s-3);
-  border-radius: var(--radius);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
 }
-.stat dt { font-size: 12px; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.04em; }
-.stat dd { font-size: 22px; font-weight: 700; line-height: 1.2; }
-.stat-overdue { background: rgba(198, 40, 40, 0.28); border-color: rgba(255, 180, 180, 0.4); }
+.legend li { display: flex; align-items: center; gap: var(--s-2); }
+.legend strong { font-variant-numeric: tabular-nums; font-size: 17px; }
+.legend-overdue { color: var(--st-overdue-ink); }
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--st);
+  flex: none;
+}
+.swatch-overdue { background: var(--hatch-overdue), var(--st-overdue-bg); }
 
 .demo-note {
-  margin-top: var(--s-3);
+  margin-top: var(--s-4);
   font-size: 13px;
-  opacity: 0.9;
+  color: var(--c-muted);
+}
+
+/* Stacked status bar: one segment per status, overdue share hatched in red */
+.status-bar {
+  display: flex;
+  gap: 2px;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--c-column);
+}
+.status-bar-lg { height: 22px; border-radius: var(--radius-sm); gap: 3px; }
+.seg {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 6px;
+  background: var(--st);
+}
+.seg-late {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--hatch-overdue);
+  box-shadow: inset 0 0 0 2px var(--st-overdue);
 }
 
 /* =========================================================================
@@ -236,9 +309,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 
 @media (max-width: 767px) {
-  .app-header { padding: var(--s-4); }
+  .app-header { padding: var(--s-3) var(--s-4); }
+  .pulse { padding: var(--s-4); }
+  .pulse-headline { font-size: 28px; }
+  .legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
   .layout { padding: var(--s-4); gap: var(--s-4); }
-  .stat { min-width: 0; flex: 1 1 28%; }
 }
 
 /* =========================================================================
@@ -272,6 +347,42 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .form-actions { display: flex; gap: var(--s-2); margin-top: var(--s-2); }
 .form-actions .btn-primary { flex: 1; }
+
+/* Workstreams — per-project status bars; each row filters the board */
+.streams {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  padding: var(--s-4);
+}
+.streams-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-2); margin-bottom: var(--s-2); }
+.streams-head h2 { font-size: 17px; }
+.streams-hint { font-size: 13px; color: var(--c-muted); }
+.stream-list { margin: 0; padding: 0; list-style: none; }
+.stream {
+  display: grid;
+  grid-template-columns: minmax(150px, 220px) minmax(0, 1fr) 76px 92px;
+  align-items: center;
+  gap: var(--s-4);
+  width: 100%;
+  padding: var(--s-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.stream:hover { background: var(--c-primary-50); }
+.stream[aria-pressed="true"] { background: var(--c-primary-50); border-color: var(--c-primary-600); }
+.stream-name { font-weight: 600; font-size: 14px; }
+.stream-done { font-size: 13px; color: var(--c-muted); font-variant-numeric: tabular-nums; text-align: right; }
+.stream-flag { font-size: 12px; font-weight: 700; color: var(--st-overdue-ink); text-align: right; }
+.stream-flag:empty::before { content: "\2014"; color: var(--c-border); font-weight: 400; }
+@media (max-width: 767px) {
+  .stream { grid-template-columns: minmax(0, 1fr) auto; gap: var(--s-1) var(--s-3); }
+  .stream .status-bar { grid-column: 1 / -1; grid-row: 2; }
+  .stream-done { display: none; }
+}
 
 /* Filter bar */
 .filters {
@@ -309,8 +420,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
   gap: var(--s-3);
   min-height: 260px;
   padding: var(--s-3);
-  background: var(--c-column);
+  background: var(--st-bg);
   border: 2px solid transparent;
+  border-top: 5px solid var(--st);
   border-radius: var(--radius-lg);
   transition: background-color 0.15s, border-color 0.15s;
 }
@@ -327,25 +439,27 @@ button, input, select, textarea { font: inherit; color: inherit; }
   gap: var(--s-2);
   font-size: 15px;
 }
-.col-glyph { font-size: 13px; color: var(--c-primary); }
+.column-head h2 { color: var(--st-ink); }
+.col-glyph { font-size: 14px; color: var(--st); }
 .col-desc { font-size: 12px; color: var(--c-muted); margin-top: calc(-1 * var(--s-2)); }
 
 .count {
   min-width: 28px;
   padding: 1px var(--s-2);
   border-radius: 999px;
-  background: var(--c-primary);
+  background: var(--st);
   color: #fff;
   font-size: 12px;
   font-weight: 700;
   text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .card-list { display: flex; flex-direction: column; gap: var(--s-3); flex: 1; }
 
 .empty {
   padding: var(--s-4);
-  border: 1px dashed #b7c2d6;
+  border: 1px dashed var(--st-line);
   border-radius: var(--radius);
   color: var(--c-muted);
   font-size: 13px;
@@ -356,14 +470,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
    8. CARDS
    ========================================================================= */
 .card {
-  --prio: var(--p-medium);
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--s-2);
   padding: var(--s-3);
   background: var(--c-surface);
   border: 1px solid var(--c-border);
-  border-left: 5px solid var(--prio);
+  border-left: 5px solid var(--st);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
   cursor: grab;
@@ -371,10 +485,23 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .card:hover { box-shadow: var(--shadow); }
 .card.dragging { opacity: 0.45; cursor: grabbing; }
 
-.card[data-priority="critical"] { --prio: var(--p-critical); }
-.card[data-priority="high"]     { --prio: var(--p-high); }
-.card[data-priority="medium"]   { --prio: var(--p-medium); }
-.card[data-priority="low"]      { --prio: var(--p-low); }
+/* Overdue cuts across columns: red frame plus a hatched top edge */
+.card[data-overdue="true"] {
+  border-color: var(--st-overdue-line);
+  border-left-color: var(--st);
+  background: linear-gradient(var(--st-overdue-bg), var(--c-surface) 72px);
+}
+.card[data-overdue="true"]::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: -1px;
+  height: 5px;
+  border-top-right-radius: var(--radius);
+  background: var(--hatch-overdue), var(--st-overdue-bg);
+}
+.card[data-status="Done"] .card-title { color: var(--c-muted); }
 
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); min-height: 26px; }
 .card-id { font-family: var(--font-mono); font-size: 12px; color: var(--c-muted); }
@@ -406,14 +533,22 @@ button, input, select, textarea { font: inherit; color: inherit; }
   font-weight: 600;
   border: 1px solid transparent;
 }
-.pill-critical { background: var(--c-danger-bg); color: #9b1c1c; border-color: #f3b8b8; }
-.pill-high     { background: var(--c-warning-bg); color: var(--c-warning); border-color: #f0cf8f; }
-.pill-medium   { background: #e6efff; color: #1a4fa0; border-color: #b9cff5; }
-.pill-low      { background: #eef0f3; color: #4a5565; border-color: #d0d5dd; }
+/* Priority is neutral ink with a signal meter, so it never competes with status colour */
+.pill-prio { display: inline-flex; align-items: center; gap: 5px; background: var(--c-surface); color: var(--c-text); border-color: var(--c-border); }
+.prio-bars { display: inline-flex; align-items: flex-end; gap: 1px; height: 10px; }
+.prio-bars i { width: 3px; background: var(--c-border); border-radius: 1px; }
+.prio-bars i:nth-child(1) { height: 4px; }
+.prio-bars i:nth-child(2) { height: 6px; }
+.prio-bars i:nth-child(3) { height: 8px; }
+.prio-bars i:nth-child(4) { height: 10px; }
+.pill-prio[data-level="4"] i,
+.pill-prio[data-level="3"] i:nth-child(-n+3),
+.pill-prio[data-level="2"] i:nth-child(-n+2),
+.pill-prio[data-level="1"] i:nth-child(1) { background: var(--c-text); }
 
 .tag { background: var(--c-primary-50); color: var(--c-primary-800); border-color: var(--c-primary-100); border-radius: var(--radius-sm); }
 
-.badge-overdue { background: var(--c-danger-bg); color: var(--c-danger); border-color: #f3b8b8; }
+.badge-overdue { background: var(--st-overdue); color: #fff; border-color: var(--st-overdue); }
 
 /* Inline delete confirmation */
 .confirm { display: flex; align-items: center; gap: var(--s-1); font-size: 13px; font-weight: 600; color: var(--c-danger); }
@@ -432,6 +567,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .btn-move:hover, .btn-move[aria-expanded="true"] { background: var(--c-primary-50); }
 .move-menu { display: flex; flex-wrap: wrap; gap: var(--s-1); }
+.move-menu .btn-xs { display: inline-flex; align-items: center; gap: 5px; }
+.move-menu .btn-xs::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--st); }
 
 /* =========================================================================
    9. TOASTS
@@ -462,7 +599,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   animation: toast-in 0.2s ease-out;
 }
 .toast-success { border-left-color: var(--c-success); }
-.toast-warning { border-left-color: var(--p-high); background: #fffaf0; }
+.toast-warning { border-left-color: var(--st-blocked); background: #fffaf0; }
 .toast-msg { flex: 1; }
 .toast .icon-btn { width: 22px; height: 22px; font-size: 16px; }
 .toast .icon-btn:hover { background: var(--c-primary-50); color: var(--c-text); }
@@ -487,22 +624,26 @@ button, input, select, textarea { font: inherit; color: inherit; }
   <div class="header-top">
     <div class="brand">
       <span class="wordmark">UOB IT PMO</span>
-      <span class="brand-sub">IT Project Kanban · internal demo</span>
+      <span class="brand-sub">IT project board, internal demo</span>
     </div>
-    <button type="button" class="btn btn-accent" id="addTaskBtn">+ Add Task</button>
+    <button type="button" class="btn btn-accent" id="addTaskBtn">+ Add task</button>
   </div>
-
-  <dl class="summary" aria-label="Board summary, all tasks">
-    <div class="stat"><dt>Total</dt><dd id="sumTotal">0</dd></div>
-    <div class="stat"><dt>Backlog</dt><dd id="sumBacklog">0</dd></div>
-    <div class="stat"><dt>In Progress</dt><dd id="sumInProgress">0</dd></div>
-    <div class="stat"><dt>Blocked</dt><dd id="sumBlocked">0</dd></div>
-    <div class="stat"><dt>Done</dt><dd id="sumDone">0</dd></div>
-    <div class="stat stat-overdue"><dt>Overdue</dt><dd id="sumOverdue">0</dd></div>
-  </dl>
-
-  <p class="demo-note"><span aria-hidden="true">ⓘ</span> Demo mode: tasks are held in memory only. Refreshing the page resets the board to the sample data.</p>
 </header>
+
+<!-- =====================================================================
+     PULSE — portfolio status at a glance (all tasks, ignores filters)
+     ===================================================================== -->
+<section class="pulse" aria-labelledby="pulseHeading">
+  <div class="pulse-top">
+    <div>
+      <h1 class="pulse-headline" id="pulseHeading"></h1>
+      <p class="pulse-sub" id="pulseSub"></p>
+    </div>
+    <ul class="legend" id="legend" aria-label="Tasks by status"></ul>
+  </div>
+  <div class="status-bar status-bar-lg" id="pulseBar" role="img"></div>
+  <p class="demo-note"><span aria-hidden="true">ⓘ</span> Demo mode: tasks are held in memory only. Refreshing the page resets the board to the sample data.</p>
+</section>
 
 <main class="layout">
 
@@ -587,6 +728,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
   </aside>
 
   <div class="workspace">
+
+    <!-- =================================================================
+         WORKSTREAMS — status mix per project; selecting one filters the board
+         ================================================================= -->
+    <section class="streams" aria-labelledby="streamsHeading">
+      <div class="streams-head">
+        <h2 id="streamsHeading">Workstreams</h2>
+        <p class="streams-hint">Select a workstream to show only its tasks</p>
+      </div>
+      <ul class="stream-list" id="streamList"></ul>
+    </section>
 
     <!-- =================================================================
          FILTER BAR — client-side filtering over the in-memory array
@@ -841,7 +993,8 @@ function renderCard(task) {
     : "";
 
   return `
-    <article class="card" draggable="true" data-id="${id}" data-priority="${prioKey}" aria-labelledby="title-${id}">
+    <article class="card" draggable="true" data-id="${id}" data-priority="${prioKey}"
+      data-status="${escapeHtml(task.status)}" data-overdue="${overdue}" aria-labelledby="title-${id}">
       <div class="card-head">
         <span class="card-id">${id}</span>
         ${deleteControl}
@@ -854,7 +1007,7 @@ function renderCard(task) {
         <div><dt>Due</dt><dd><time datetime="${escapeHtml(task.dueDate)}">${escapeHtml(formatDate(task.dueDate))}</time></dd></div>
       </dl>
       <div class="card-tags">
-        <span class="pill pill-${prioKey}"><span class="visually-hidden">Priority: </span>${prio}</span>
+        <span class="pill pill-prio" data-level="${PRIORITIES.length - PRIORITIES.indexOf(task.priority)}"><span class="prio-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="visually-hidden">Priority: </span>${prio}</span>
         <span class="tag"><span class="visually-hidden">Category: </span>${escapeHtml(task.category)}</span>
         ${overdue ? `<span class="badge-overdue"><span aria-hidden="true">⚠ </span>Overdue</span>` : ""}
       </div>
@@ -867,14 +1020,76 @@ function renderCard(task) {
     </article>`;
 }
 
+const STATUS_GLYPHS = { "Backlog": "○", "In Progress": "◐", "Blocked": "⊘", "Done": "●" };
+
+function countBy(tasks) {
+  const counts = Object.fromEntries(STATUSES.map((s) => [s, 0]));
+  tasks.forEach((t) => { counts[t.status] += 1; });
+  return { counts, overdue: tasks.filter(isOverdue).length, total: tasks.length };
+}
+
+function describeCounts({ counts, overdue }) {
+  return `${STATUSES.map((s) => `${s} ${counts[s]}`).join(", ")}; ${overdue} overdue`;
+}
+
+// One segment per non-empty status, sized by count; the overdue share is hatched.
+function renderStatusBar(tasks) {
+  return STATUSES.map((status) => {
+    const inStatus = tasks.filter((t) => t.status === status);
+    if (!inStatus.length) return "";
+    const late = inStatus.filter(isOverdue).length;
+    const lateBar = late
+      ? `<span class="seg-late" style="width:${(late / inStatus.length) * 100}%"></span>`
+      : "";
+    return `<span class="seg" data-status="${escapeHtml(status)}" style="flex-grow:${inStatus.length}">${lateBar}</span>`;
+  }).join("");
+}
+
+function renderPulse() {
+  const summary = countBy(state.tasks);
+  const { counts, overdue, total } = summary;
+
+  document.getElementById("pulseHeading").innerHTML =
+    `${counts.Done} <span class="of">of</span> ${total} tasks done`;
+  const risks = [];
+  if (counts.Blocked) risks.push(`${counts.Blocked} blocked`);
+  if (overdue) risks.push(`${overdue} past due`);
+  document.getElementById("pulseSub").textContent = risks.length
+    ? `Needs attention: ${risks.join(" and ")}.`
+    : "Nothing blocked or past due.";
+
+  const bar = document.getElementById("pulseBar");
+  bar.innerHTML = renderStatusBar(state.tasks);
+  bar.setAttribute("aria-label", `All tasks by status: ${describeCounts(summary)}`);
+
+  document.getElementById("legend").innerHTML = STATUSES.map((s) =>
+    `<li data-status="${escapeHtml(s)}"><span class="swatch" aria-hidden="true"></span>${escapeHtml(s)} <strong>${counts[s]}</strong></li>`
+  ).join("") +
+    `<li class="legend-overdue"><span class="swatch swatch-overdue" aria-hidden="true"></span>Overdue <strong>${overdue}</strong></li>`;
+}
+
+function renderStreams() {
+  document.getElementById("streamList").innerHTML = PROJECTS.map((project) => {
+    const tasks = state.tasks.filter((t) => t.project === project);
+    const summary = countBy(tasks);
+    const pressed = state.filters.project === project;
+    const name = escapeHtml(project);
+    return `
+      <li>
+        <button type="button" class="stream" data-project="${name}" aria-pressed="${pressed}">
+          <span class="stream-name">${name}</span>
+          <span class="status-bar" aria-hidden="true">${renderStatusBar(tasks)}</span>
+          <span class="stream-done">${summary.counts.Done} / ${summary.total} done</span>
+          <span class="stream-flag">${summary.overdue ? `${summary.overdue} overdue` : ""}</span>
+          <span class="visually-hidden">${summary.total ? describeCounts(summary) : "No tasks"}</span>
+        </button>
+      </li>`;
+  }).join("");
+}
+
 function renderSummary() {
-  const count = (status) => state.tasks.filter((t) => t.status === status).length;
-  document.getElementById("sumTotal").textContent = state.tasks.length;
-  document.getElementById("sumBacklog").textContent = count("Backlog");
-  document.getElementById("sumInProgress").textContent = count("In Progress");
-  document.getElementById("sumBlocked").textContent = count("Blocked");
-  document.getElementById("sumDone").textContent = count("Done");
-  document.getElementById("sumOverdue").textContent = state.tasks.filter(isOverdue).length;
+  renderPulse();
+  renderStreams();
 }
 
 function renderBoard() {
@@ -1227,6 +1442,19 @@ function wireFilters() {
   form.addEventListener("reset", () => setTimeout(sync, 0));
 }
 
+function wireStreams() {
+  document.getElementById("streamList").addEventListener("click", (event) => {
+    const btn = event.target.closest(".stream");
+    if (!btn) return;
+    const project = btn.dataset.project;
+    const next = state.filters.project === project ? "" : project;
+    state.filters.project = next;
+    document.getElementById("filterProject").value = next;
+    renderBoard();
+    focusEl(`.stream[data-project="${CSS.escape(project)}"]`);
+  });
+}
+
 function wireTaskForm() {
   const form = document.getElementById("taskForm");
   form.addEventListener("submit", handleTaskSubmit);
@@ -1269,6 +1497,7 @@ function init() {
   document.addEventListener("keydown", handleKeydown);
   document.addEventListener("click", handleOutsideClick);
   wireFilters();
+  wireStreams();
   wireTaskForm();
 
   seedTasks();
